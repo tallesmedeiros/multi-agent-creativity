@@ -34,15 +34,16 @@ Este repositório demonstra um pipeline completo para avaliar ideias criativas u
 6. **Relatórios e visualizações:** `generate_detailed_report` produz um HTML estilizado com estatísticas, rankings e comparações; `InteractiveVisualizer` (em `visualization.py`) oferece gráficos interativos quando habilitado.
 
 ## Métricas de criatividade
-O sistema avalia cada solução segundo seis dimensões inspiradas em literatura de criatividade:
-- **Fluência (💡):** volume de ideias e ações descritas.
-- **Originalidade (🎨):** ineditismo e novidade da proposta.
-- **Flexibilidade (🔄):** variedade de abordagens ou contextos de uso.
-- **Elaboração (🔬):** nível de detalhe e refinamento técnico.
-- **Adequação (✅):** viabilidade prática e aplicabilidade.
-- **Impacto (💥):** potencial transformador ou de geração de valor.
+O sistema avalia cada solução segundo seis dimensões inspiradas em literatura de criatividade. A coleta inicial ocorre em `CompleteHybridFramework._analyze_solution_algorithmic`, que extrai sinais quantitativos (contagem de tokens, padrões de palavras-chave e normalizações por z-score) e retorna um vetor NumPy com *scores* heurísticos. Esses *scores* são então ponderados pelo vetor de preferência dos agentes (`Agent.preferences`) para gerar os rankings iniciais.
 
-Cada agente atribui pesos (de *muito baixa* a *muito alta*) a essas métricas usando `MetricPreference`, refletindo prioridades distintas durante a negociação.
+- **Fluência (💡):** estimada a partir da contagem de ideias/ações distintas em uma descrição. A função identifica verbos e conectores de ações, normaliza pela extensão do texto e aumenta a pontuação para descrições que apresentam várias proposições autônomas.
+- **Originalidade (🎨):** medida por raridade de palavras-chave e combinações semânticas pouco usuais. O algoritmo utiliza dicionários de referência e detecção de *n-grams* incomuns; soluções com termos menos frequentes recebem *score* maior.
+- **Flexibilidade (🔄):** avaliada pelo número de domínios ou contextos presentes. São detectadas categorias (ex.: educação, saúde, indústria) e, quanto maior a diversidade entre elas, maior a pontuação.
+- **Elaboração (🔬):** capturada via densidade de detalhes técnicos e presencia de etapas ou parâmetros concretos. Mais números, descrições de processos e especificações técnicas elevam o *score*.
+- **Adequação (✅):** estimada pela presença de restrições realistas (custo, tempo, recursos) e alinhamento com metas práticas. A heurística verifica menções a viabilidade, implementação e conformidade com requisitos.
+- **Impacto (💥):** calculado por sinais de escala e transformação (ex.: alcance global, efeitos sistêmicos, geração de valor econômico/social). Menções a benefícios amplos ou disruptivos elevam a nota.
+
+Cada agente atribui pesos (de *muito baixa* a *muito alta*) a essas métricas usando `MetricPreference`, refletindo prioridades distintas durante a negociação. Durante o consenso, esses pesos influenciam tanto o ranking algorítmico quanto as sugestões do simulador LLM.
 
 ## Teoria de decisão multiagente aplicada
 A lógica de consenso combina vários paradigmas de tomada de decisão coletiva:
